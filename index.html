@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Dune Network — Remaking a Shadow-Fleet Graphic</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow+Condensed:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-eyebrow">FIELD NOTES · DATA JOURNALISM REMAKE</div>
+  <h1 class="hero-title">THE&nbsp;DUNE&nbsp;NETWORK</h1>
+  <p class="hero-sub">Rebuilding and critiquing a Reuters graphic on how one tanker moved sanctioned oil through 33 transfers with 11 ships</p>
+  <div class="hero-meta">
+    <span>SOURCE: REUTERS GRAPHICS, "HOW IRAN MOVES SANCTIONED OIL AROUND THE WORLD"</span>
+    <span class="dot">·</span>
+    <span>REMAKE TOOLING: P5.JS</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="intro">
+    <p>
+      Iran's oil sector has been squeezed by layers of U.S., EU, and UN sanctions for over a
+      decade, yet crude remains the country's single biggest source of foreign currency. To
+      keep it flowing, brokers rely on a well-documented workaround: ship-to-ship (STS)
+      transfers conducted quietly at sea, which blend cargo and paperwork until the oil's
+      origin becomes very hard to trace.
+    </p>
+    <p>
+      Reuters' investigation centered on one vessel, the tanker <strong>Dune</strong>, which
+      the reporting ties to roughly <strong>33 separate transfers</strong> with
+      <strong>11 other ships</strong>, moving on the order of <strong>5 million barrels</strong>
+      of crude. Their graphic renders this as a Sankey-style diagram: a dark canvas, glowing
+      gold lines, Dune at the center, thickness encoding volume.
+    </p>
+  </section>
+
+  <section class="explainer">
+    <h2>How the transfer works</h2>
+    <p>
+      A ship-to-ship transfer is simple in principle: two tankers meet at sea, tie up
+      alongside one another, and pump crude from one hull to the other. What makes it a
+      sanctions workaround is everything around that act. A vessel preparing to load
+      sanctioned crude will often switch off its Automatic Identification System (AIS)
+      transponder beforehand, so the meeting itself never appears on public tracking
+      services. Once the oil has changed vessels, it can be re-papered with new
+      documentation, sometimes listing a different country of origin, before continuing on
+      to a buyer.
+    </p>
+    <p>
+      None of this requires new technology — aging tankers, a quiet stretch of water, and a
+      willingness to operate without insurance from Western underwriters are enough. That's
+      part of why enforcement is difficult: the "shadow fleet" doing this work is large,
+      constantly repainted and renamed, and spread across international waters where no
+      single authority has full jurisdiction.
+    </p>
+  </section>
+
+  <section class="background">
+    <h2>The vessel at the center</h2>
+    <p>
+      <strong>Dune</strong> is identified in sanctions-related reporting and U.S. Treasury
+      designations as a tanker linked to Iran's National Iranian Tanker Company (NITC)
+      network — the state-linked fleet the U.S. has repeatedly targeted for its role moving
+      Iranian crude. Treasury actions describe transfers from NITC-linked vessels to
+      buyers via intermediary companies, with cargo eventually blended into the broader
+      international market. Dune's reported transfer count — dozens of handoffs with a wide
+      set of partner vessels — is consistent with a ship functioning as a hub rather than a
+      one-off participant.
+    </p>
+  </section>
+
+  <section class="stats-strip">
+    <div class="stat-item">
+      <span class="stat-num">33</span>
+      <span class="stat-label">reported transfers</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">11</span>
+      <span class="stat-label">partner vessels</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">~5M</span>
+      <span class="stat-label">barrels moved</span>
+    </div>
+  </section>
+
+  <section class="callout-section">
+    <p class="callout">
+      That's a striking piece of design — but a Sankey diagram usually encodes
+      <em>sequential stages</em> (A → B → C). What's actually being described here is closer
+      to one hub trading repeatedly with many spokes over time. Below is a rebuild that keeps
+      the volume-as-thickness idea, but structures it as a radial hub network instead — plus
+      notes on where that change helps, and where it might lose something the original had.
+    </p>
+  </section>
+
+  <section class="viz-section">
+    <div class="viz-label">
+      <span class="viz-index">RECONSTRUCTED VIEW</span>
+      <h2>Dune's reported transfer network</h2>
+      <p class="viz-note">
+        Figures below are reconstructed from the totals reported in coverage of the
+        investigation (33 transfers · 11 vessels · ~5M barrels), distributed per vessel for
+        illustrative purposes. They are <strong>not</strong> Reuters' underlying dataset —
+        treat exact per-ship numbers as approximate.
+      </p>
+    </div>
+
+    <div class="viz-frame">
+      <div id="canvas-holder"></div>
+      <div id="tooltip" class="tooltip hidden"></div>
+    </div>
+
+    <div class="viz-controls">
+      <button id="sortVolume" class="ctrl active">SORT: VOLUME</button>
+      <button id="sortTransfers" class="ctrl">SORT: TRANSFER COUNT</button>
+      <button id="toggleFlow" class="ctrl">PAUSE FLOW</button>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch line-thick"></span> Line width = barrels transferred</div>
+      <div class="legend-item"><span class="swatch dot-gold"></span> Particles = simulated flow, not live shipments</div>
+    </div>
+  </section>
+
+  <section class="critique">
+    <h2>What changed, and why</h2>
+    <div class="critique-grid">
+      <div class="critique-col">
+        <h3>Original approach</h3>
+        <ul>
+          <li>Sankey-style layout implies staged, directional flow</li>
+          <li>Dark background + glow prioritizes drama and cinematic reveal</li>
+          <li>Ship icons carry narrative texture (this is a specific vessel, not a data point)</li>
+          <li>Static image — thickness must be judged by eye alone</li>
+        </ul>
+      </div>
+      <div class="critique-col">
+        <h3>This remake</h3>
+        <ul>
+          <li>Radial hub layout — matches the actual "one hub, many spokes" structure</li>
+          <li>Same dark/gold palette, kept because it genuinely suits the "shadow fleet" subject</li>
+          <li>Hover interaction surfaces exact reconstructed numbers instead of relying on line width alone</li>
+          <li>Sortable by volume vs. transfer count, so a small-volume-but-frequent partner isn't hidden by a large single line</li>
+        </ul>
+      </div>
+    </div>
+    <p class="critique-verdict">
+      Net take: the original's Sankey look is more visually authoritative at a glance, but it
+      slightly overstates structure the data doesn't have (there's no real "stage two"). The
+      radial layout is more honest about the shape of the relationship, at the cost of some of
+      the cinematic punch that made the original memorable.
+    </p>
+  </section>
+
+  <section class="notes">
+    <h2>Methodology &amp; sourcing notes</h2>
+    <p>
+      Per-vessel figures are an illustrative reconstruction built to sum to the publicly
+      reported totals (33 transfers, 11 vessels, ~5,000,000 barrels) — see <code>data.js</code>.
+      This project is a design/critique exercise, not a re-reporting of Reuters' investigation;
+      for the sourced, verified figures and the original graphic, read the Reuters piece
+      directly.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <span>Remade for a data-viz critique exercise · Built with p5.js</span>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"
+        onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js';"></script>
+<script src="data.js"></script>
+<script src="sketch.js"></script>
+<script>
+  // Diagnostic: if p5 never loaded (blocked CDN, offline, etc.) say so visibly
+  // instead of leaving a silent blank box.
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      if (typeof p5 === "undefined") {
+        var holder = document.getElementById("canvas-holder");
+        holder.innerHTML =
+          '<div style="padding:2.5rem;font-family:IBM Plex Mono,monospace;' +
+          'font-size:0.8rem;color:#a8462f;text-align:center;">' +
+          '⚠ p5.js failed to load from the CDN.<br><br>' +
+          'Check: internet connection, ad-blocker/firewall blocking ' +
+          'cdn.jsdelivr.net or cdnjs.cloudflare.com, or open DevTools ' +
+          '(F12) → Console for the exact error.' +
+          '</div>';
+      }
+    }, 800);
+  });
+</script>
+</body>
+</html>
